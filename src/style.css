@@ -91,7 +91,6 @@ html.on-paper .rail-list li.on i { background: var(--red-deep); border-color: va
     linear-gradient(90deg, rgb(0 0 0 / .55), transparent 7%, transparent 93%, rgb(0 0 0 / .45)),
     linear-gradient(180deg, rgb(0 0 0 / .5), transparent 14%),
     #121010; }
-.room-wall::after { content: ""; position: absolute; left: 6.5%; top: 9%; bottom: 10%; width: 1px; background: linear-gradient(180deg, transparent, rgb(0 0 0 / .6) 30%, rgb(0 0 0 / .6) 70%, transparent); }
 .room-floor { position: absolute; left: 0; right: 0; bottom: 0; height: 11%; background:
     radial-gradient(40% 100% at 10% 0%, rgb(150 22 34 / .35), transparent 70%),
     linear-gradient(180deg, #0a0909, #0b0a0a); border-top: 1px solid rgb(255 255 255 / .05); }
