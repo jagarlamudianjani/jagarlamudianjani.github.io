@@ -155,9 +155,19 @@ dialog.addEventListener("click", (e) => {
 // ---------------------------------------------------------------- rail
 const sections = $$("[data-rail]");
 $(".rail-list").innerHTML = sections
-  .map((s) => `<li><i></i><span>${esc(s.dataset.rail)}</span></li>`)
+  .map(
+    (s, i) =>
+      `<li><i></i><b>${pad(i)}</b><span>${esc(s.dataset.rail)}</span></li>`,
+  )
   .join("");
 const railItems = $$(".rail-list li");
+// each stop sits at its section's share of the page
+function placeStops() {
+  const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  sections.forEach((s, i) =>
+    railItems[i].style.setProperty("--at", Math.min(0.985, s.offsetTop / max).toFixed(4)),
+  );
+}
 
 // ---------------------------------------------------------------- gauge
 const gauge = buildGauge($(".gauge"));
@@ -421,17 +431,23 @@ ScrollTrigger.create({
   start: 0,
   end: "max",
   onUpdate: (self) => {
-    $(".rail-fill").style.transform = `scaleY(${self.progress})`;
+    $(".rail-marker").style.setProperty("--p", self.progress.toFixed(4));
+    $(".rail-pct").textContent = String(Math.round(self.progress * 100)).padStart(3, "0");
   },
+  onRefresh: placeStops,
 });
 sections.forEach((s, i) =>
   ScrollTrigger.create({
     trigger: s,
     start: "top 50%",
     end: "bottom 50%",
-    onToggle: (self) =>
-      self.isActive &&
-      railItems.forEach((li, k) => li.classList.toggle("on", k === i)),
+    onToggle: (self) => {
+      if (!self.isActive) return;
+      railItems.forEach((li, k) => li.classList.toggle("on", k === i));
+      const label = $("span", railItems[i]);
+      delete label.dataset.text;
+      decode(label, 500);
+    },
   }),
 );
 // the rail and nav switch to dark ink over the paper sections
@@ -499,7 +515,13 @@ Promise.all([document.fonts?.ready, loadImage("/portrait.png")])
       delay: 0.4,
       frame: (W, H) =>
         W < 900
-          ? { cx: 0.5, bottom: 0.9, height: 0.42, rows: 62 }
+          ? (() => {
+              // the figure fills whatever is left between the intro and the ticker
+              const intro = $(".hero-intro").getBoundingClientRect();
+              const top = (intro.bottom - $(".hero-pin").getBoundingClientRect().top + 8) / H;
+              const bottom = 0.93;
+              return { cx: 0.5, bottom, height: Math.max(0.22, Math.min(0.42, bottom - top)), rows: 62 };
+            })()
           : { cx: 0.76, bottom: 1.03, height: 0.86, rows: 104 },
     }),
   )
